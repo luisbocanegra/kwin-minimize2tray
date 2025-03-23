@@ -6,9 +6,7 @@ Item {
     id: root
     readonly property bool enableDebug: KWin.readConfig("EnableDebug", false)
     property var trayIcons: new Object()
-    readonly property Component trayIconComponent: TrayIcon {
-        id: trayIcon
-    }
+    readonly property Component trayIconComponent: TrayIcon {}
 
     function dumpProps(obj) {
         for (var k of Object.keys(obj)) {
@@ -67,7 +65,8 @@ Item {
             "icon": window.icon,
             "windowId": windowId,
             "toolTipText": formattedWindowInfo(window),
-            "launcherUrl": launcherUrl
+            "launcherUrl": launcherUrl,
+            "xdgName": window.desktopFileName
         });
         trayItem.requestShowHide.connect(toggleShowHide)
         trayItem.requestClose.connect(closeWindow)

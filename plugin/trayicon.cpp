@@ -1,44 +1,16 @@
 #include "trayicon.h"
+#include <KService>
 #include <QAction>
 #include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDebug>
-#include <QMenu>
 #include <QVariantMap>
 
 TrayIcon::TrayIcon(QObject *parent) : QObject(parent) {
-    trayIcon = new QSystemTrayIcon(this);
-
-    QMenu *menu = new QMenu();
-
-    QAction *showAction = new QAction("Show/Hide", menu);
-    connect(showAction, &QAction::triggered, this, [this]() { emit requestShowHide(m_windowId); });
-    menu->addAction(showAction);
-
-    QAction *unpinAction = new QAction("Unpin", menu);
-    connect(unpinAction, &QAction::triggered, this, [this]() { emit requestUnpin(m_windowId); });
-    menu->addAction(unpinAction);
-
-    QAction *quitAction = new QAction("Quit", menu);
-    connect(quitAction, &QAction::triggered, this, [this]() { emit requestClose(m_windowId); });
-    menu->addAction(quitAction);
-
-    connect(trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
-        if (reason == QSystemTrayIcon::Trigger) {
-            emit requestShowHide(m_windowId);
-        }
-    });
-    connect(this, &TrayIcon::toolTipTextChanged, this, [this]() { trayIcon->setToolTip(m_toolTipText); });
-    connect(this, &TrayIcon::iconChanged, this, [this]() { trayIcon->setIcon(m_icon); });
-    trayIcon->setContextMenu(menu);
-    trayIcon->show();
-
-    QDBusConnection::sessionBus().connect(QString(),                           // service
-                                          QString(),                           // path
-                                          "com.canonical.Unity.LauncherEntry", // interface
-                                          "Update",                            // member
-                                          this, SLOT(launcherAPIUpdate(QString, QMap<QString, QVariant>)));
+    connect(this, &TrayIcon::xdgNameChanged, this, [this]() { initializeTrayIcon(); });
 }
+
+TrayIcon::~TrayIcon() = default;
 
 void TrayIcon::setIcon(const QIcon newIcon) {
     if (m_icon.cacheKey() != newIcon.cacheKey()) {
@@ -175,5 +147,75 @@ void TrayIcon::setUrgent(bool urgent) {
     if (m_urgent != urgent) {
         m_urgent = urgent;
         Q_EMIT urgentChanged(urgent);
+    }
+}
+
+void TrayIcon::setXdgName(const QString id) {
+    if (id != m_xdgName) {
+        m_xdgName = id;
+        emit xdgNameChanged();
+    }
+}
+
+void TrayIcon::initializeTrayIcon() {
+    if (trayIcon) {
+        return;
+    }
+
+    qDebug() << "New Tray Icon" << m_xdgName;
+    trayIcon = new KStatusNotifierItem(m_xdgName, this);
+    QMenu *m_menu = new QMenu();
+
+    QAction *showAction = new QAction("Show/Hide", m_menu);
+    connect(showAction, &QAction::triggered, this, [this]() { emit requestShowHide(m_windowId); });
+    m_menu->addAction(showAction);
+
+    QAction *unpinAction = new QAction("Unpin", m_menu);
+    connect(unpinAction, &QAction::triggered, this, [this]() { emit requestUnpin(m_windowId); });
+    m_menu->addAction(unpinAction);
+
+    QAction *quitAction = new QAction("Quit", m_menu);
+    connect(quitAction, &QAction::triggered, this, [this]() { emit requestClose(m_windowId); });
+    m_menu->addAction(quitAction);
+
+    connect(trayIcon, &KStatusNotifierItem::quitRequested, this, [this]() {
+        emit requestClose(m_windowId);
+        trayIcon->abortQuit();
+    });
+
+    connect(trayIcon, &KStatusNotifierItem::activateRequested, this, [this]() { emit requestShowHide(m_windowId); });
+
+    connect(this, &TrayIcon::toolTipTextChanged, this, [this]() { trayIcon->setToolTipTitle(m_toolTipText); });
+
+    connect(this, &TrayIcon::xdgNameChanged, this, [this]() { setAppName(m_xdgName); });
+
+    connect(this, &TrayIcon::appNameChanged, this, [this]() { trayIcon->setTitle(m_appName); });
+
+    connect(this, &TrayIcon::iconChanged, this, [this]() { trayIcon->setIconByPixmap(m_icon); });
+
+    QDBusConnection::sessionBus().connect(QString(), QString(), "com.canonical.Unity.LauncherEntry", "Update", this,
+                                          SLOT(launcherAPIUpdate(QString, QMap<QString, QVariant>)));
+
+    setAppName(m_xdgName);
+    trayIcon->setContextMenu(m_menu);
+    trayIcon->setToolTipTitle(m_toolTipText);
+    trayIcon->setToolTipSubTitle(m_xdgName);
+    trayIcon->setIconByPixmap(m_icon);
+    trayIcon->setTitle(m_appName);
+    trayIcon->setStatus(KStatusNotifierItem::Active);
+}
+
+void TrayIcon::setAppName(const QString &xdgName) {
+    QString newName;
+    KService::Ptr service = KService::serviceByDesktopName(xdgName);
+    if (service) {
+        newName = service->name();
+    } else {
+        newName = xdgName;
+    }
+    qDebug() << xdgName << "XDG name:" << newName;
+    if (m_appName != newName) {
+        m_appName = newName;
+        emit appNameChanged();
     }
 }
