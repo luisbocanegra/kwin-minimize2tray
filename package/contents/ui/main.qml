@@ -54,12 +54,8 @@ Item {
             return;
         }
         let launcherUrl = window.desktopFileName
-        if (!launcherUrl.startsWith("application://")) {
-            launcherUrl = "application://" + launcherUrl
-        }
-        if (!launcherUrl.endsWith(".desktop")) {
-            launcherUrl = launcherUrl + ".desktop"
-        }
+        launcherUrl = "application://" + launcherUrl
+        launcherUrl = launcherUrl + ".desktop"
 
         const trayItem = trayIconComponent.createObject(root, {
             "icon": window.icon,

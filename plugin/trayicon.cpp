@@ -4,6 +4,7 @@
 #include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDebug>
+#include <QPainter>
 #include <QVariantMap>
 
 TrayIcon::TrayIcon(QObject *parent) : QObject(parent) {
@@ -28,8 +29,17 @@ void TrayIcon::setToolTipText(const QString toolTipText) {
 }
 
 void TrayIcon::launcherAPIUpdate(const QString &uri, const QMap<QString, QVariant> &properties) {
+
+    QString fixed_uri = uri;
+    if (!fixed_uri.startsWith(QLatin1String("application://"))) {
+        fixed_uri.prepend(QLatin1String("application://"));
+    }
+    if (!fixed_uri.endsWith(QLatin1String(".desktop"))) {
+        fixed_uri.append(QLatin1String(".desktop"));
+    }
+
     // ignore signals from other applications
-    if (m_launcherUrl != uri) {
+    if (m_launcherUrl != fixed_uri) {
         return;
     }
 
@@ -52,6 +62,7 @@ void TrayIcon::launcherAPIUpdate(const QString &uri, const QMap<QString, QVarian
         bool newCountVisible = foundCountVisible->toBool();
         if (newCountVisible != m_countVisible) {
             m_countVisible = newCountVisible;
+            emit countVisibleChanged(newCountVisible);
         }
     }
 
@@ -84,7 +95,7 @@ void TrayIcon::launcherAPIUpdate(const QString &uri, const QMap<QString, QVarian
         }
     }
 
-    qDebug() << uri << properties;
+    qDebug() << fixed_uri << properties;
     qDebug() << "count: " << m_countVisible << " " << m_count;
     qDebug() << "progress: " << m_progressVisible << " " << m_progress;
     qDebug() << "urgent: " << m_urgent;
@@ -195,6 +206,19 @@ void TrayIcon::initializeTrayIcon() {
     QDBusConnection::sessionBus().connect(QString(), QString(), "com.canonical.Unity.LauncherEntry", "Update", this,
                                           SLOT(launcherAPIUpdate(QString, QMap<QString, QVariant>)));
 
+    connect(this, &TrayIcon::urgentChanged, this, [this]() {
+        if (m_urgent) {
+            trayIcon->setStatus(KStatusNotifierItem::NeedsAttention);
+        } else {
+            trayIcon->setStatus(KStatusNotifierItem::Active);
+        }
+    });
+
+    connect(this, &TrayIcon::countVisibleChanged, this, [this]() { updateBadges(); });
+    connect(this, &TrayIcon::progressVisibleChanged, this, [this]() { updateBadges(); });
+    connect(this, &TrayIcon::countChanged, this, [this]() { updateBadges(); });
+    connect(this, &TrayIcon::progressChanged, this, [this]() { updateBadges(); });
+
     setAppName(m_xdgName);
     trayIcon->setContextMenu(m_menu);
     trayIcon->setToolTipTitle(m_toolTipText);
@@ -216,5 +240,44 @@ void TrayIcon::setAppName(const QString &xdgName) {
     if (m_appName != newName) {
         m_appName = newName;
         emit appNameChanged();
+    }
+}
+
+void TrayIcon::updateBadges() {
+    if (m_countVisible || m_progressVisible) {
+
+        const QSize iconSize = trayIcon->iconPixmap().actualSize(QSize(64, 64));
+        QPixmap basePixmap = m_icon.pixmap(iconSize);
+        QPainter painter(&basePixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::TextAntialiasing);
+
+        if (m_countVisible && m_count > 0) {
+            QFont font;
+            font.setPixelSize(int(basePixmap.width() * 0.5));
+            font.setBold(true);
+            painter.setFont(font);
+            const int alignFlags = Qt::AlignRight | Qt::AlignTop | Qt::TextDontClip;
+            QString text = QString::number(m_count);
+            QRect textRect = painter.boundingRect(basePixmap.rect(), alignFlags, text);
+            // make text a little more readable
+            painter.setBrush(QColor(0, 0, 0, 100));
+            painter.setPen(Qt::NoPen);
+            painter.drawRect(textRect.adjusted(-1, 0, 1, 0));
+
+            painter.setPen(Qt::white);
+            painter.drawText(basePixmap.rect(), alignFlags, text);
+        }
+
+        if (m_progressVisible && m_progress > 0) {
+            QRect progressBarRect(0, basePixmap.height() - 5, basePixmap.width() * m_progress / 100, 5);
+            painter.setBrush(QColor(0, 255, 0, 150));
+            painter.setPen(Qt::NoPen);
+            painter.drawRect(progressBarRect);
+        }
+
+        trayIcon->setIconByPixmap(basePixmap);
+    } else {
+        trayIcon->setIconByPixmap(m_icon);
     }
 }

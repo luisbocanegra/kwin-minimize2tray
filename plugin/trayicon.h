@@ -79,6 +79,7 @@ class TrayIcon : public QObject {
     QString m_appName;
     QString appName() const { return m_appName; }
     void setAppName(const QString &xdgName);
+    void updateBadges();
 
     void setCount(int count);
     void setCountVisible(bool countVisible);
