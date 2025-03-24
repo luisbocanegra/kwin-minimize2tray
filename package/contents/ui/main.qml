@@ -28,6 +28,9 @@ Item {
         window.outputChanged.connect(() => {
             updateToolTip(window)
         })
+        window.demandsAttentionChanged.connect(() => {
+            updateDemandsAttention(window)
+        })
     }
 
     function setupTrayicon(window) {
@@ -136,6 +139,13 @@ Item {
             trayIcons[window.internalId].toolTipText = formattedWindowInfo(window)
         }
     }
+
+    function updateDemandsAttention(window) {
+        if (window.internalId in trayIcons) {
+            trayIcons[window.internalId].demandsAttention = window.demandsAttention
+        }
+    }
+
 
     ShortcutHandler {
         name: "Minimize to tray"

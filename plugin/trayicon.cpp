@@ -214,6 +214,14 @@ void TrayIcon::initializeTrayIcon() {
         }
     });
 
+    connect(this, &TrayIcon::demandsAttentionChanged, this, [this]() {
+        if (m_demandsAttention) {
+            trayIcon->setStatus(KStatusNotifierItem::NeedsAttention);
+        } else {
+            trayIcon->setStatus(KStatusNotifierItem::Active);
+        }
+    });
+
     connect(this, &TrayIcon::countVisibleChanged, this, [this]() { updateBadges(); });
     connect(this, &TrayIcon::progressVisibleChanged, this, [this]() { updateBadges(); });
     connect(this, &TrayIcon::countChanged, this, [this]() { updateBadges(); });
@@ -279,5 +287,12 @@ void TrayIcon::updateBadges() {
         trayIcon->setIconByPixmap(basePixmap);
     } else {
         trayIcon->setIconByPixmap(m_icon);
+    }
+}
+
+void TrayIcon::setDemandsAttention(bool demandsAttention) {
+    if (m_demandsAttention != demandsAttention) {
+        m_demandsAttention = demandsAttention;
+        emit demandsAttentionChanged();
     }
 }

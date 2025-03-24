@@ -19,6 +19,7 @@ class TrayIcon : public QObject {
     Q_PROPERTY(QString toolTipText READ toolTipText WRITE setToolTipText NOTIFY toolTipTextChanged)
     Q_PROPERTY(QString launcherUrl READ launcherUrl WRITE setLauncherUrl NOTIFY launcherUrlChanged)
     Q_PROPERTY(QString xdgName READ xdgName WRITE setXdgName NOTIFY xdgNameChanged)
+    Q_PROPERTY(bool demandsAttention READ demandsAttention WRITE setDemandsAttention NOTIFY demandsAttentionChanged)
 
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(bool countVisible READ countVisible NOTIFY countVisibleChanged)
@@ -48,6 +49,7 @@ class TrayIcon : public QObject {
     void requestClose(const QUuid windowId);
     void requestUnpin(const QUuid windowId);
     void xdgNameChanged();
+    void demandsAttentionChanged();
 
     void launcherUrlChanged(const QString &launcherUrl);
     void countChanged(int count);
@@ -80,6 +82,9 @@ class TrayIcon : public QObject {
     QString appName() const { return m_appName; }
     void setAppName(const QString &xdgName);
     void updateBadges();
+    bool m_demandsAttention;
+    bool demandsAttention() const { return m_demandsAttention; }
+    void setDemandsAttention(bool demandsAttention);
 
     void setCount(int count);
     void setCountVisible(bool countVisible);
