@@ -6,8 +6,12 @@
   <kcfgfile name=""/>
 
   <group name="">
-    <entry name="EnableDebug" type="Bool">
+    <entry name="debugEnabled" type="Bool">
       <default>true</default>
+    </entry>
+    <entry name="hideByDefaultClass" type="String">
+      <label>Automatically hide windows with certain classes(comma-separated list)</label>
+      <default></default>
     </entry>
   </group>
 </kcfg>

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>304</width>
+    <width>452</width>
     <height>288</height>
    </rect>
   </property>
@@ -23,33 +23,11 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="whatsThis">
-          <string>Change how fast cursor position is updated.</string>
-         </property>
          <property name="text">
-          <string>Updates per second:</string>
+          <string>Start minimized (comma separated class names):</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QSpinBox" name="kcfg_UpdatesPerSecond">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>1</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="whatsThis">
-          <string>Change how fast cursor position is updated.</string>
-         </property>
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>60</number>
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -59,23 +37,26 @@
           <string>Debug:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="kcfg_EnableDebug">
+       <item row="1" column="2">
+        <widget class="QCheckBox" name="kcfg_debugEnabled">
          <property name="text">
           <string/>
          </property>
         </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLineEdit" name="kcfg_hideByDefaultClass"/>
        </item>
       </layout>
      </item>
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -117,7 +98,7 @@
           <string>Changes apply only after disabling and re-enabling the script!</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
