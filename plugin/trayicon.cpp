@@ -253,33 +253,50 @@ void TrayIcon::setAppName(const QString &xdgName) {
 
 void TrayIcon::updateBadges() {
     if (m_countVisible || m_progressVisible) {
-
-        const QSize iconSize = trayIcon->iconPixmap().actualSize(QSize(64, 64));
-        QPixmap basePixmap = m_icon.pixmap(iconSize);
+        QSize maxIconSize;
+        for (const QSize &size : m_icon.availableSizes()) {
+            if (size.height() > maxIconSize.height()) {
+                maxIconSize = size;
+            }
+        }
+        if (maxIconSize.isEmpty()) {
+            maxIconSize = QSize(64, 64);
+        }
+        QPixmap basePixmap = m_icon.pixmap(maxIconSize);
+        const float dynamicScaling = basePixmap.height() / 22.0;
+        QRect pixmapRect = basePixmap.rect();
         QPainter painter(&basePixmap);
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setRenderHint(QPainter::TextAntialiasing);
 
         if (m_countVisible && m_count > 0) {
             QFont font;
-            font.setPixelSize(int(basePixmap.width() * 0.5));
-            font.setBold(true);
-            painter.setFont(font);
-            const int alignFlags = Qt::AlignRight | Qt::AlignTop | Qt::TextDontClip;
+            font.setWeight(QFont::Weight::Bold);
+            font.setLetterSpacing(QFont::AbsoluteSpacing, -4.0);
+            QFontMetrics metrics(font);
+            const int alignFlags = Qt::AlignTop | Qt::AlignRight | Qt::TextDontClip;
             QString text = QString::number(m_count);
-            QRect textRect = painter.boundingRect(basePixmap.rect(), alignFlags, text);
-            // make text a little more readable
-            painter.setBrush(QColor(0, 0, 0, 100));
-            painter.setPen(Qt::NoPen);
-            painter.drawRect(textRect.adjusted(-1, 0, 1, 0));
-
+            font.setPixelSize(12);
+            double scaleFactor = static_cast<double>(basePixmap.width()) / metrics.tightBoundingRect(text).width();
+            font.setPixelSize(
+                std::min(static_cast<int>(font.pixelSize() * scaleFactor), static_cast<int>(basePixmap.height() * .6)));
+            painter.setFont(font);
+            painter.setPen(Qt::black);
+            painter.drawText(
+                pixmapRect.adjusted(-1 * dynamicScaling, 1 * dynamicScaling, -1 * dynamicScaling, 1 * dynamicScaling),
+                alignFlags, text);
+            painter.setPen(Qt::black);
+            painter.drawText(
+                pixmapRect.adjusted(1 * dynamicScaling, 1 * dynamicScaling, 1 * dynamicScaling, 1 * dynamicScaling),
+                alignFlags, text);
             painter.setPen(Qt::white);
-            painter.drawText(basePixmap.rect(), alignFlags, text);
+            painter.drawText(pixmapRect, alignFlags, text);
         }
 
         if (m_progressVisible && m_progress > 0) {
-            QRect progressBarRect(0, basePixmap.height() - 5, basePixmap.width() * m_progress / 100, 5);
-            painter.setBrush(QColor(0, 255, 0, 150));
+            const int barHeight = static_cast<int>(1 * dynamicScaling);
+            QRect progressBarRect(0, basePixmap.height() - barHeight, basePixmap.width() * m_progress / 100, barHeight);
+            painter.setBrush(QColor(0, 255, 0, 255));
             painter.setPen(Qt::NoPen);
             painter.drawRect(progressBarRect);
         }
