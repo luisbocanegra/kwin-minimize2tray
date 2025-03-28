@@ -269,7 +269,7 @@ void TrayIcon::updateBadges() {
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setRenderHint(QPainter::TextAntialiasing);
 
-        if (m_countVisible && m_count > 0) {
+        if (m_countVisible && m_count > 0 && !m_countUseDot) {
             QFont font;
             font.setWeight(QFont::Weight::Bold);
             font.setLetterSpacing(QFont::AbsoluteSpacing, -4.0);
@@ -293,6 +293,21 @@ void TrayIcon::updateBadges() {
             painter.drawText(pixmapRect, alignFlags, text);
         }
 
+        if (m_countVisible && m_count > 0 && m_countUseDot) {
+            int borderWidth = static_cast<int>(2 * dynamicScaling);
+            int circleRadius = static_cast<int>(3 * dynamicScaling);
+            int shadowRadius = circleRadius + borderWidth;
+            QPoint circlePos =
+                QPoint(pixmapRect.topRight() + QPoint(-circleRadius - borderWidth, circleRadius + borderWidth));
+
+            painter.setCompositionMode(QPainter::CompositionMode_Clear);
+            painter.setBrush(Qt::black);
+            painter.drawEllipse(circlePos, shadowRadius, shadowRadius);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.setBrush(QColor("#E93D57"));
+            painter.drawEllipse(circlePos, circleRadius, circleRadius);
+        }
+
         if (m_progressVisible && m_progress > 0) {
             const int barHeight = static_cast<int>(1 * dynamicScaling);
             QRect progressBarRect(0, basePixmap.height() - barHeight, basePixmap.width() * m_progress / 100, barHeight);
@@ -311,5 +326,12 @@ void TrayIcon::setDemandsAttention(bool demandsAttention) {
     if (m_demandsAttention != demandsAttention) {
         m_demandsAttention = demandsAttention;
         emit demandsAttentionChanged();
+    }
+}
+
+void TrayIcon::setCountUseDot(bool countUseDot) {
+    if (m_countUseDot != countUseDot) {
+        m_countUseDot = countUseDot;
+        emit countUseDotChanged();
     }
 }

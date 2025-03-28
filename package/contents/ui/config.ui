@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>452</width>
+    <width>461</width>
     <height>288</height>
    </rect>
   </property>
@@ -15,7 +15,7 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
+       <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="label">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -31,7 +31,41 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="3" column="2">
+        <widget class="QCheckBox" name="kcfg_debugEnabled">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3">
+        <widget class="QPlainTextEdit" name="kcfg_hideByDefaultClass">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="lineWidth">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QCheckBox" name="kcfg_countUseDot">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2" alignment="Qt::AlignmentFlag::AlignRight">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Notifications as dot</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Debug:</string>
@@ -40,16 +74,6 @@
           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QCheckBox" name="kcfg_debugEnabled">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLineEdit" name="kcfg_hideByDefaultClass"/>
        </item>
       </layout>
      </item>

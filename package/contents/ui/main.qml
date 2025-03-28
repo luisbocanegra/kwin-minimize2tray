@@ -6,6 +6,7 @@ Item {
     id: root
     property bool debugEnabled: KWin.readConfig("debugEnabled", false)
     property var hideByDefaultClass: commaSeparate(KWin.readConfig("hideByDefaultClass", ""))
+    property bool countUseDot: KWin.readConfig("countUseDot", true)
     property var trayIcons: new Object()
     readonly property Component trayIconComponent: TrayIcon {}
 
@@ -82,7 +83,8 @@ Item {
             "windowId": windowId,
             "toolTipText": formattedWindowInfo(window),
             "launcherUrl": launcherUrl,
-            "xdgName": window.desktopFileName
+            "xdgName": window.desktopFileName,
+            "countUseDot": countUseDot
         });
         trayItem.requestShowHide.connect(toggleShowHide)
         trayItem.requestClose.connect(closeWindow)

@@ -13,5 +13,8 @@
       <label>Automatically hide windows with certain classes(comma-separated list)</label>
       <default></default>
     </entry>
+    <entry name="countUseDot" type="Bool">
+      <default>false</default>
+    </entry>
   </group>
 </kcfg>
