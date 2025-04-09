@@ -5,7 +5,7 @@ if [ -d "build" ]; then
 fi
 
 # Install script for current user
-cmake -B build/script -S . -DBUILD_PLUGIN=OFF -DCMAKE_INSTALL_PREFIX=~/.local
+cmake -B build/script -S . -DBUILD_PLUGIN=OFF -DCMAKE_INSTALL_PREFIX=$HOME/.local
 cmake --build build/script
 cmake --install build/script
 
