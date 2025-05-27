@@ -23,7 +23,7 @@ Item {
     function isValidWindow(window) {
         return window.minimizable && window.normalWindow &&
             !window.dialog && !window.modal && !window.specialWindow &&
-            !window.appletPopup
+            !window.appletPopup && !window.splash && !window.utility && !window.transient
     }
 
     function dumpProps(obj) {
@@ -170,7 +170,10 @@ Item {
         text: "Minimize window to tray (sets skip Taskbar, Switcher & Pager)"
         sequence: "Meta+Alt+PgDown"
         onActivated: {
-            const window = Workspace.activeWindow
+            let window = Workspace.activeWindow
+            while (window.transient) {
+                window = window.transientFor
+            }
             if (!isValidWindow(window)) return
             toggleShowHide(window.internalId)
             root.addTrayIcon(window)
