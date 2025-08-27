@@ -49,6 +49,9 @@ Item {
         window.demandsAttentionChanged.connect(() => {
             updateDemandsAttention(window)
         })
+        window.iconChanged.connect(() => {
+            updateWindowIcon(window)
+        })
     }
 
     function setupTrayicon(window) {
@@ -156,6 +159,12 @@ Item {
     function updateToolTip(window) {
         if (window.internalId in trayIcons) {
             trayIcons[window.internalId].toolTipText = formattedWindowInfo(window)
+        }
+    }
+
+    function updateWindowIcon(window) {
+        if (window.internalId in trayIcons) {
+            trayIcons[window.internalId].icon = window.icon
         }
     }
 
