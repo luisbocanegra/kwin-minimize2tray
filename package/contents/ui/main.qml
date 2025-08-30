@@ -7,6 +7,7 @@ Item {
     property bool debugEnabled: KWin.readConfig("debugEnabled", false)
     property var hideByDefaultClass: commaSeparate(KWin.readConfig("hideByDefaultClass", ""))
     property bool countUseDot: KWin.readConfig("countUseDot", false)
+    property bool hideOnMinimize: KWin.readConfig("hideOnMinimize", false)
     property var trayIcons: new Object()
     readonly property Component trayIconComponent: TrayIcon {}
 
@@ -48,6 +49,9 @@ Item {
         })
         window.demandsAttentionChanged.connect(() => {
             updateDemandsAttention(window)
+        })
+        window.minimizedChanged.connect(() => {
+            onMinimizeChanged(window)
         })
         window.iconChanged.connect(() => {
             updateWindowIcon(window)
@@ -124,13 +128,23 @@ Item {
         const window = getWindow(windowId)
         if (!window) return
 
-        if (window.minimized) {
-            setSkip(false, window)
-        } else {
-            setSkip(true, window)
-        }
         window.minimized = !window.minimized
         if (!window.minimized) Workspace.activeWindow = window
+
+        if (window.minimized) {
+            setSkip(true, window)
+        } else {
+            setSkip(false, window)
+        }
+    }
+
+    function onMinimizeChanged(window) {
+        if (!(window.internalId in trayIcons)) {
+            return;
+        }
+        if (window.minimized && hideOnMinimize) {
+            setSkip(true, window);
+        }
     }
 
     function getWindow(windowId) {
@@ -184,6 +198,7 @@ Item {
                 window = window.transientFor
             }
             if (!isValidWindow(window)) return
+
             toggleShowHide(window.internalId)
             root.addTrayIcon(window)
         }
