@@ -41,17 +41,16 @@ cd kwin-minimize2tray
 
 ### Immutable distributions
 
-Use the `install-immutable.sh` then add `~/.local/lib/qml` to `QML_IMPORT_PATH` for the C++ plugin to work:
+1. Run `./install-immutable.sh` to install
+2. Add `QML_IMPORT_PATH` environment variable for the C++ plugin to work:
 
-Create the file `~/.config/plasma-workspace/env/path.sh` (and folders if they don't exist) with the following:
+    Create the file `~/.config/plasma-workspace/env/path.sh` (and folders if they don't exist) with the following:
 
-```sh
-export QML_IMPORT_PATH="$HOME/.local/lib/qml:$QML_IMPORT_PATH"
-```
+    ```sh
+    export QML_IMPORT_PATH="$HOME/.local/lib64/qml:$HOME/.local/lib/qml:$QML_IMPORT_PATH"
+    ```
 
-Log-out or reboot to apply the change
-
-For more information see <https://userbase.kde.org/Session_Environment_Variables>
+3. Log-out or reboot to apply the change
 
 ## Configuration/Usage
 
