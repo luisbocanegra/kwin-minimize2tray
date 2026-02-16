@@ -17,20 +17,21 @@ Item {
         text: "Minimize window to tray (sets skip Taskbar, Switcher & Pager)"
         sequence: "Meta+Alt+PgDown"
         onActivated: {
-            let window = Workspace.activeWindow
+            let window = Workspace.activeWindow;
             while (window.transient) {
-                window = window.transientFor
+                window = window.transientFor;
             }
-            if (!Utils.isValidWindow(window)) return
-            Utils.toggleShowHide(window.internalId)
-            Utils.addTrayIcon(window)
+            if (!Utils.isValidWindow(window))
+                return;
+            Utils.toggleShowHide(window.internalId);
+            Utils.addTrayIcon(window);
         }
     }
 
     Component.onCompleted: {
         Workspace.windowAdded.connect(window => Utils.setup(window));
         Workspace.windowAdded.connect(window => {
-            Utils.setupAutoHide(window)
+            Utils.setupAutoHide(window);
         });
         Workspace.windowRemoved.connect(window => Utils.removeTrayIcon(window));
         Workspace.windows.forEach(window => Utils.setup(window));
