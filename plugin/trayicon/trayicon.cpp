@@ -1,35 +1,46 @@
 #include "trayicon.h"
+
+#include <KIO/CommandLauncherJob>
 #include <KService>
 #include <QAction>
-#include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDebug>
 #include <QPainter>
-#include <QVariantMap>
+#include <QVariant>
 
-TrayIcon::TrayIcon(QObject *parent) : QObject(parent) {
-    connect(this, &TrayIcon::xdgNameChanged, this, [this]() { initializeTrayIcon(); });
+TrayIcon::TrayIcon(QObject *parent)
+    : QObject(parent)
+{
+    qDebug() << "Hello from TrayIcon Plugin";
+    connect(this, &TrayIcon::xdgNameChanged, this, [this]() {
+        initializeTrayIcon();
+    });
 }
 
 TrayIcon::~TrayIcon() = default;
 
-void TrayIcon::setIcon(const QIcon newIcon) {
+void TrayIcon::setIcon(const QIcon newIcon)
+{
     if (m_icon.cacheKey() != newIcon.cacheKey()) {
         m_icon = newIcon;
         emit iconChanged();
     }
 }
 
-void TrayIcon::setWindowId(const QUuid window) { m_windowId = window; }
-void TrayIcon::setToolTipText(const QString toolTipText) {
+void TrayIcon::setWindowId(const QUuid window)
+{
+    m_windowId = window;
+}
+void TrayIcon::setToolTipText(const QString toolTipText)
+{
     if (m_toolTipText != toolTipText) {
         m_toolTipText = toolTipText;
         emit toolTipTextChanged();
     }
 }
 
-void TrayIcon::launcherAPIUpdate(const QString &uri, const QMap<QString, QVariant> &properties) {
-
+void TrayIcon::launcherAPIUpdate(const QString &uri, const QMap<QString, QVariant> &properties)
+{
     QString fixed_uri = uri;
     if (!fixed_uri.startsWith(QLatin1String("application://"))) {
         fixed_uri.prepend(QLatin1String("application://"));
@@ -101,36 +112,52 @@ void TrayIcon::launcherAPIUpdate(const QString &uri, const QMap<QString, QVarian
     qDebug() << "urgent: " << m_urgent;
 }
 
-QString TrayIcon::launcherUrl() const { return m_launcherUrl; }
+QString TrayIcon::launcherUrl() const
+{
+    return m_launcherUrl;
+}
 
-void TrayIcon::setLauncherUrl(const QString &launcherUrl) {
+void TrayIcon::setLauncherUrl(const QString &launcherUrl)
+{
     if (launcherUrl != m_launcherUrl) {
         m_launcherUrl = launcherUrl;
         Q_EMIT launcherUrlChanged(launcherUrl);
     }
 }
 
-int TrayIcon::count() const { return m_count; }
+int TrayIcon::count() const
+{
+    return m_count;
+}
 
-void TrayIcon::setCount(int count) {
+void TrayIcon::setCount(int count)
+{
     if (m_count != count) {
         m_count = count;
         Q_EMIT countChanged(count);
     }
 }
 
-bool TrayIcon::countVisible() const { return m_countVisible; }
+bool TrayIcon::countVisible() const
+{
+    return m_countVisible;
+}
 
-void TrayIcon::setCountVisible(bool countVisible) {
+void TrayIcon::setCountVisible(bool countVisible)
+{
     if (m_countVisible != countVisible) {
         m_countVisible = countVisible;
         Q_EMIT countVisibleChanged(countVisible);
     }
 }
 
-int TrayIcon::progress() const { return m_progress; }
+int TrayIcon::progress() const
+{
+    return m_progress;
+}
 
-void TrayIcon::setProgress(int progress) {
+void TrayIcon::setProgress(int progress)
+{
     int boundedProgress = std::clamp(progress, 0, 100);
 
     if (progress != boundedProgress) {
@@ -143,32 +170,42 @@ void TrayIcon::setProgress(int progress) {
     }
 }
 
-bool TrayIcon::progressVisible() const { return m_progressVisible; }
+bool TrayIcon::progressVisible() const
+{
+    return m_progressVisible;
+}
 
-void TrayIcon::setProgressVisible(bool progressVisible) {
+void TrayIcon::setProgressVisible(bool progressVisible)
+{
     if (m_progressVisible != progressVisible) {
         m_progressVisible = progressVisible;
         Q_EMIT progressVisibleChanged(progressVisible);
     }
 }
 
-bool TrayIcon::urgent() const { return m_urgent; }
+bool TrayIcon::urgent() const
+{
+    return m_urgent;
+}
 
-void TrayIcon::setUrgent(bool urgent) {
+void TrayIcon::setUrgent(bool urgent)
+{
     if (m_urgent != urgent) {
         m_urgent = urgent;
         Q_EMIT urgentChanged(urgent);
     }
 }
 
-void TrayIcon::setXdgName(const QString id) {
+void TrayIcon::setXdgName(const QString id)
+{
     if (id != m_xdgName) {
         m_xdgName = id;
         emit xdgNameChanged();
     }
 }
 
-void TrayIcon::initializeTrayIcon() {
+void TrayIcon::initializeTrayIcon()
+{
     if (trayIcon) {
         return;
     }
@@ -178,12 +215,16 @@ void TrayIcon::initializeTrayIcon() {
     QMenu *m_menu = new QMenu();
 
     QAction *showAction = new QAction("Show/Hide", m_menu);
-    connect(showAction, &QAction::triggered, this, [this]() { emit requestShowHide(m_windowId); });
+    connect(showAction, &QAction::triggered, this, [this]() {
+        emit requestShowHide(m_windowId);
+    });
     showAction->setIcon(QIcon::fromTheme(QStringLiteral("view-visible-symbolic")));
     m_menu->addAction(showAction);
 
     QAction *unpinAction = new QAction("Unpin", m_menu);
-    connect(unpinAction, &QAction::triggered, this, [this]() { emit requestUnpin(m_windowId); });
+    connect(unpinAction, &QAction::triggered, this, [this]() {
+        emit requestUnpin(m_windowId);
+    });
     unpinAction->setIcon(QIcon::fromTheme(QStringLiteral("window-unpin-symbolic")));
     m_menu->addAction(unpinAction);
 
@@ -193,18 +234,35 @@ void TrayIcon::initializeTrayIcon() {
         trayIcon->abortQuit();
     });
 
-    connect(trayIcon, &KStatusNotifierItem::activateRequested, this, [this]() { emit requestShowHide(m_windowId); });
+    QAction *configureAction = new QAction("Configure…", m_menu);
+    connect(configureAction, &QAction::triggered, this, [this]() {
+        configure();
+    });
+    configureAction->setIcon(QIcon::fromTheme(QStringLiteral("configure-symbolic")));
+    m_menu->addAction(configureAction);
 
-    connect(this, &TrayIcon::toolTipTextChanged, this, [this]() { trayIcon->setToolTipTitle(m_toolTipText); });
+    connect(trayIcon, &KStatusNotifierItem::activateRequested, this, [this]() {
+        emit requestShowHide(m_windowId);
+    });
 
-    connect(this, &TrayIcon::xdgNameChanged, this, [this]() { setAppName(m_xdgName); });
+    connect(this, &TrayIcon::toolTipTextChanged, this, [this]() {
+        trayIcon->setToolTipTitle(m_toolTipText);
+    });
 
-    connect(this, &TrayIcon::appNameChanged, this, [this]() { trayIcon->setTitle(m_appName); });
+    connect(this, &TrayIcon::xdgNameChanged, this, [this]() {
+        setAppName(m_xdgName);
+    });
 
-    connect(this, &TrayIcon::iconChanged, this, [this]() { trayIcon->setIconByPixmap(m_icon); });
+    connect(this, &TrayIcon::appNameChanged, this, [this]() {
+        trayIcon->setTitle(m_appName);
+    });
 
-    QDBusConnection::sessionBus().connect(QString(), QString(), "com.canonical.Unity.LauncherEntry", "Update", this,
-                                          SLOT(launcherAPIUpdate(QString, QMap<QString, QVariant>)));
+    connect(this, &TrayIcon::iconChanged, this, [this]() {
+        trayIcon->setIconByPixmap(m_icon);
+    });
+
+    QDBusConnection::sessionBus()
+        .connect(QString(), QString(), "com.canonical.Unity.LauncherEntry", "Update", this, SLOT(launcherAPIUpdate(QString, QMap<QString, QVariant>)));
 
     connect(this, &TrayIcon::urgentChanged, this, [this]() {
         if (m_urgent) {
@@ -222,11 +280,21 @@ void TrayIcon::initializeTrayIcon() {
         }
     });
 
-    connect(this, &TrayIcon::countVisibleChanged, this, [this]() { updateBadges(); });
-    connect(this, &TrayIcon::progressVisibleChanged, this, [this]() { updateBadges(); });
-    connect(this, &TrayIcon::countChanged, this, [this]() { updateBadges(); });
-    connect(this, &TrayIcon::progressChanged, this, [this]() { updateBadges(); });
-
+    connect(this, &TrayIcon::countVisibleChanged, this, [this]() {
+        updateBadges();
+    });
+    connect(this, &TrayIcon::progressVisibleChanged, this, [this]() {
+        updateBadges();
+    });
+    connect(this, &TrayIcon::countChanged, this, [this]() {
+        updateBadges();
+    });
+    connect(this, &TrayIcon::progressChanged, this, [this]() {
+        updateBadges();
+    });
+    connect(this, &TrayIcon::countUseDotChanged, this, [this]() {
+        updateBadges();
+    });
     setAppName(m_xdgName);
     trayIcon->setContextMenu(m_menu);
     trayIcon->setToolTipTitle(m_toolTipText);
@@ -236,7 +304,8 @@ void TrayIcon::initializeTrayIcon() {
     trayIcon->setStatus(KStatusNotifierItem::Active);
 }
 
-void TrayIcon::setAppName(const QString &xdgName) {
+void TrayIcon::setAppName(const QString &xdgName)
+{
     QString newName;
     KService::Ptr service = KService::serviceByDesktopName(xdgName);
     if (service) {
@@ -251,7 +320,8 @@ void TrayIcon::setAppName(const QString &xdgName) {
     }
 }
 
-void TrayIcon::updateBadges() {
+void TrayIcon::updateBadges()
+{
     if (m_countVisible || m_progressVisible) {
         QSize maxIconSize;
         for (const QSize &size : m_icon.availableSizes()) {
@@ -278,17 +348,12 @@ void TrayIcon::updateBadges() {
             QString text = QString::number(m_count);
             font.setPixelSize(12);
             double scaleFactor = static_cast<double>(basePixmap.width()) / metrics.tightBoundingRect(text).width();
-            font.setPixelSize(
-                std::min(static_cast<int>(font.pixelSize() * scaleFactor), static_cast<int>(basePixmap.height() * .6)));
+            font.setPixelSize(std::min(static_cast<int>(font.pixelSize() * scaleFactor), static_cast<int>(basePixmap.height() * .6)));
             painter.setFont(font);
             painter.setPen(Qt::black);
-            painter.drawText(
-                pixmapRect.adjusted(-1 * dynamicScaling, 1 * dynamicScaling, -1 * dynamicScaling, 1 * dynamicScaling),
-                alignFlags, text);
+            painter.drawText(pixmapRect.adjusted(-1 * dynamicScaling, 1 * dynamicScaling, -1 * dynamicScaling, 1 * dynamicScaling), alignFlags, text);
             painter.setPen(Qt::black);
-            painter.drawText(
-                pixmapRect.adjusted(1 * dynamicScaling, 1 * dynamicScaling, 1 * dynamicScaling, 1 * dynamicScaling),
-                alignFlags, text);
+            painter.drawText(pixmapRect.adjusted(1 * dynamicScaling, 1 * dynamicScaling, 1 * dynamicScaling, 1 * dynamicScaling), alignFlags, text);
             painter.setPen(Qt::white);
             painter.drawText(pixmapRect, alignFlags, text);
         }
@@ -297,8 +362,7 @@ void TrayIcon::updateBadges() {
             int borderWidth = static_cast<int>(2 * dynamicScaling);
             int circleRadius = static_cast<int>(3 * dynamicScaling);
             int shadowRadius = circleRadius + borderWidth;
-            QPoint circlePos =
-                QPoint(pixmapRect.topRight() + QPoint(-circleRadius - borderWidth, circleRadius + borderWidth));
+            QPoint circlePos = QPoint(pixmapRect.topRight() + QPoint(-circleRadius - borderWidth, circleRadius + borderWidth));
 
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
             painter.setBrush(Qt::black);
@@ -322,16 +386,58 @@ void TrayIcon::updateBadges() {
     }
 }
 
-void TrayIcon::setDemandsAttention(bool demandsAttention) {
+void TrayIcon::setDemandsAttention(bool demandsAttention)
+{
     if (m_demandsAttention != demandsAttention) {
         m_demandsAttention = demandsAttention;
         emit demandsAttentionChanged();
     }
 }
 
-void TrayIcon::setCountUseDot(bool countUseDot) {
+void TrayIcon::setCountUseDot(bool countUseDot)
+{
     if (m_countUseDot != countUseDot) {
         m_countUseDot = countUseDot;
         emit countUseDotChanged();
     }
+}
+
+void TrayIcon::configure()
+{
+    KIO::CommandLauncherJob *job = new KIO::CommandLauncherJob(QStringLiteral("kcmshell6"), QStringList() << QStringLiteral("kcm_kwin_scripts"));
+    job->start();
+}
+
+QIcon TrayIcon::icon()
+{
+    return m_icon;
+}
+
+QUuid TrayIcon::windowId()
+{
+    return m_windowId;
+}
+
+QString TrayIcon::toolTipText()
+{
+    return m_toolTipText;
+}
+
+QString TrayIcon::xdgName()
+{
+    return m_xdgName;
+}
+QString TrayIcon::appName()
+{
+    return m_appName;
+}
+
+bool TrayIcon::demandsAttention()
+{
+    return m_demandsAttention;
+}
+
+bool TrayIcon::countUseDot()
+{
+    return m_countUseDot;
 }

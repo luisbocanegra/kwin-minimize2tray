@@ -4,7 +4,6 @@
 #pragma once
 
 #include <KStatusNotifierItem>
-#include <QDBusMessage>
 #include <QIcon>
 #include <QMenu>
 #include <QObject>
@@ -12,7 +11,8 @@
 
 class KStatusNotifierItem;
 
-class TrayIcon : public QObject {
+class TrayIcon : public QObject
+{
     Q_OBJECT
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY iconChanged);
     Q_PROPERTY(QUuid windowId READ windowId WRITE setWindowId NOTIFY windowIdChanged);
@@ -28,7 +28,7 @@ class TrayIcon : public QObject {
     Q_PROPERTY(bool progressVisible READ progressVisible NOTIFY progressVisibleChanged)
     Q_PROPERTY(bool urgent READ urgent NOTIFY urgentChanged)
 
-  public:
+public:
     explicit TrayIcon(QObject *parent = nullptr);
 
     QString launcherUrl() const;
@@ -41,7 +41,7 @@ class TrayIcon : public QObject {
 
     ~TrayIcon() override;
 
-  signals:
+signals:
     void iconChanged();
     void windowIdChanged();
     void toolTipTextChanged();
@@ -61,34 +61,34 @@ class TrayIcon : public QObject {
     void urgentChanged(bool urgent);
     void appNameChanged();
 
-  public slots:
+public slots:
     void launcherAPIUpdate(const QString &uri, const QMap<QString, QVariant> &properties);
 
-  private:
+private:
     KStatusNotifierItem *trayIcon = nullptr;
     QMenu *m_menu;
     QIcon m_icon;
-    QIcon icon() const { return m_icon; }
+    QIcon icon();
     void setIcon(QIcon icon);
     QUuid m_windowId;
-    QUuid windowId() const { return m_windowId; }
+    QUuid windowId();
     void setWindowId(QUuid windowId);
     QString m_toolTipText;
-    QString toolTipText() const { return m_toolTipText; }
+    QString toolTipText();
     void setToolTipText(QString toolTipText);
     QString m_xdgName;
-    QString xdgName() const { return m_xdgName; }
+    QString xdgName();
     void setXdgName(QString id);
     void initializeTrayIcon();
     QString m_appName;
-    QString appName() const { return m_appName; }
+    QString appName();
     void setAppName(const QString &xdgName);
     void updateBadges();
     bool m_demandsAttention;
-    bool demandsAttention() const { return m_demandsAttention; }
+    bool demandsAttention();
     void setDemandsAttention(bool demandsAttention);
     bool m_countUseDot;
-    bool countUseDot() const { return m_countUseDot; }
+    bool countUseDot();
     void setCountUseDot(bool countUseDot);
 
     void setCount(int count);
@@ -96,6 +96,7 @@ class TrayIcon : public QObject {
     void setProgress(int progress);
     void setProgressVisible(bool progressVisible);
     void setUrgent(bool urgent);
+    void configure();
 
     QString m_launcherUrl;
     int m_count = 0;

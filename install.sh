@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 if [ -d "build" ]; then
     rm -rf build
