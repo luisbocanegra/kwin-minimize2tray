@@ -11,6 +11,7 @@ Hide windows to the system tray, similar to [KDocker](https://github.com/user-no
 >
 > To verify if an application is running on Xwayland instead of Wayland use the KWin Debug Console.
 > ![wayland](screenshots/wayland.png)
+> You can also use the `xlsclients` in a terminal (usually from x11-tools or x11-utils packages).
 
 ## Features
 
