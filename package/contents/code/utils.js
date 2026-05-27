@@ -63,29 +63,6 @@ function formattedWindowInfo(w) {
     return `${w.caption || w.resourceName || w.resourceClass}\n${desktops} @ ${w.output.name}`;
 }
 
-function addTrayIcon(window) {
-    const windowId = window.internalId;
-    if (windowId in trayIcons) {
-        return;
-    }
-    let launcherUrl = window.desktopFileName;
-    launcherUrl = "application://" + launcherUrl;
-    launcherUrl = launcherUrl + ".desktop";
-
-    const trayItem = trayIconComponent.createObject(root, {
-        "icon": window.icon,
-        "windowId": windowId,
-        "toolTipText": formattedWindowInfo(window),
-        "launcherUrl": launcherUrl,
-        "xdgName": window.desktopFileName,
-        "countUseDot": countUseDot
-    });
-    trayItem.requestShowHide.connect(toggleShowHide);
-    trayItem.requestClose.connect(closeWindow);
-    trayItem.requestUnpin.connect(unpinIcon);
-    trayIcons[windowId] = trayItem;
-}
-
 function removeTrayIcon(window) {
     const windowId = window.internalId;
     if (!(windowId in trayIcons)) {
